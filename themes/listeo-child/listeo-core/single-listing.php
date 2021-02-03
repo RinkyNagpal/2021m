@@ -40,6 +40,23 @@ else: ?>
 		?>
 <!-- Content
 ================================================== -->
+<style>
+	.mobile-listing-review {
+		display: none;
+	}
+	.desktop-listing-review .boxed-widget {
+		overflow: inherit;
+	}
+	@media (max-width: 991px) {
+		.mobile-listing-review {
+			display: block;
+			padding: 0 15px;
+		}
+		.desktop-listing-review {
+			display: none;
+		}
+	}
+</style>
 <div class="container">
 	<div class="row sticky-wrapper">
 <?php while ( have_posts() ) : the_post();  ?>
@@ -211,7 +228,88 @@ else: ?>
 			<?php $template_loader->get_template_part( 'single-partials/single-listing','pricing' );  ?>
 			<?php $template_loader->get_template_part( 'single-partials/single-listing','opening' );  ?>
 			<?php $template_loader->get_template_part( 'single-partials/single-listing','video' );  ?>
+			<div class="mobile-listing-review">
+				<?php if( get_post_meta($post->ID,'_verified',true ) == 'on') : ?>
+					<!-- Verified Badge -->
+					<div class="verified-badge with-tip" data-tip-content="<?php esc_html_e('Listing has been verified and belongs to the business owner or manager.','listeo_core'); ?>">
+						<i class="sl sl-icon-check"></i> <?php esc_html_e('Verified Listing','listeo_core') ?>
+					</div>
+				<?php else:
+					if(get_option('listeo_claim_page_button')){
+						$claim_page = get_option('listeo_claim_page');?>
+						<!-- <div class="claim-badge with-tip" data-tip-content="<?php esc_html_e('Click to claim this listing.','listeo_core'); ?>">
+							<a href="<?php echo get_permalink($claim_page); ?>"><i class="sl sl-icon-question"></i> <?php esc_html_e('Not verified. Claim this listing!','listeo_core') ?></a>
+						</div> -->
+						<?php }
+
+					endif; ?>
+
+					<?php if( get_post_meta($post->ID,'_verified',true ) == 'on') {
+						get_sidebar('listing');
+					}
+					else{ 
+				?>
+					<div id="un_verified_listing_widget" class="listing-widget widget listeo_core widget_listing_owner boxed-widget my_widget1">
+						<div>
+								<h4><b>Contact Business:</b></h4>
+								<?php 
+									if( is_user_logged_in() ) { 
+										?>
+											<div id="small-dialog" class="zoom-anim-dialog mfp-hide">
+												<div class="small-dialog-header">
+													<h3><?php esc_html_e('Send Message', 'listeo_core'); ?></h3>
+												</div>
+												<div id="unverify_listing_msg_form" class="message-reply margin-top-0">
+													<form>
+													
+														<textarea 
+														required
+														cols="40" id="contact-message" class="custommessage" name="message" rows="3" placeholder="<?php esc_attr_e('Your message','listeo_core'); ?>"></textarea>
+														<button data-listing_id="<?php echo esc_attr(get_the_ID()); ?>" id="send_unverify_listing_msg_btn" class="button">
+														<i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i><?php esc_html_e('Send Message', 'listeo_core'); ?></button>	
+														<div style="display: none;" class="notification closeable success margin-top-20"></div>
+										 			
+										 			</form>
+								  
+												</div>
+											</div>
+											<div style="margin-top:5px;" class="new-list-btn unverify_listing_btn">
+												<a id="unverify_listing_msg_btn" href="#small-dialog" class="send-message-to-owner button popup-with-zoom-anim listeo_list_provider_meg_btn">
+													<?php esc_html_e('Message Business', 'listeo'); ?>
+												</a>
+											</div>
+										<?php
+									}
+									else{
+										?>
+										<div style="margin-top:5px;" class="new-list-btn unverify_listing_btn">
+											<a id="unverify_listing_msg_btn" href="#sign-in-dialog" class="send-message-to-owner button popup-with-zoom-anim listeo_list_provider_meg_btn" style="display:inline-block;">
+												Message Vendor				</a>
+										</div>
+										<?php
+									}	
+								?>
+								<p>Unverified businesses take a few hours to respond</p>
+								<!-- <p> If this is your business <a href="<?php echo site_url(); ?>/claim-listing/">click here</a> to verify today.</p> -->
+								<?php
+									if(get_option('listeo_claim_page_button')){
+
+										$claim_page = get_option('listeo_claim_page');?>
+										<div style="margin-top:80px;" class="claim_link"><p> Is this your Business ? <a href="<?php echo get_permalink($claim_page); ?>"><?php esc_html_e('Claim this listing!','listeo_core') ?></a> </p></div>
+
+										<?php
+									}
+								?>
+						</div>
+					</div>
+					<?php
+				} ?>
+			</div>
 			<?php $template_loader->get_template_part( 'single-partials/single-listing','location' );  ?>
+			<div class="mobile-listing-review">
+				<?php if(!get_option('listeo_disable_reviews')){ 
+					$template_loader->get_template_part( 'single-partials/single-listing','reviews' ); } ?>
+			</div>
 			<?php
 				if(get_post_meta( $post->ID, '_cancellation_policy', true) != '') {
 					$template_loader->get_template_part( 'single-partials/single-listing','cancellation_policy' );  
@@ -225,7 +323,7 @@ else: ?>
 		<!-- Sidebar
 		================================================== -->
 		<div class="col-lg-4 col-md-4 margin-top-75 sticky">
-
+			<div class="desktop-listing-review">
 				<?php if( get_post_meta($post->ID,'_verified',true ) == 'on') : ?>
 					<!-- Verified Badge -->
 					<div class="verified-badge with-tip" data-tip-content="<?php esc_html_e('Listing has been verified and belongs to the business owner or manager.','listeo_core'); ?>">
@@ -242,7 +340,9 @@ else: ?>
 					endif; ?>
 
 				<?php if( get_post_meta($post->ID,'_verified',true ) == 'on') {
-					get_sidebar('listing');
+					// get_sidebar('listing');
+					// var_dump(TEMPLATEPATH);
+					include( TEMPLATEPATH . '/sidebar-listing.php');
 				}
 				else{ 
 					?>
@@ -298,17 +398,23 @@ else: ?>
 								?>
 						</div>
 					</div>
-					<div>
+					<div class="desktop-listing-review">
 						<?php if ( is_active_sidebar( 'single_unveryfie_siderbar' ) ) : ?>
 								<?php dynamic_sidebar( 'single_unveryfie_siderbar' ); ?>
 						<?php endif; ?>
 					</div>
 					<?php
 				} ?>
-
+			</div>
 		</div>
 		<!-- Sidebar / End -->
-
+		<div>
+			<div class="mobile-listing-review">	
+				<?php if ( is_active_sidebar( 'single_unveryfie_siderbar' ) ) : ?>
+						<?php dynamic_sidebar( 'single_unveryfie_siderbar' ); ?>
+				<?php endif; ?>
+			</div>
+		</div>
 	</div>
 </div>
 
