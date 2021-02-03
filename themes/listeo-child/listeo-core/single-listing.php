@@ -56,6 +56,7 @@ else: ?>
 			display: none;
 		}
 	}
+	
 </style>
 <div class="container">
 	<div class="row sticky-wrapper">
